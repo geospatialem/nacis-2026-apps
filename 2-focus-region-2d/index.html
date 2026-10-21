@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>2D Focus Region</title>
+
+    <script type="module" blocking="render" src="https://js.arcgis.com/5.2.0-next"></script>
+
+    <style>
+      html,
+      body,
+      arcgis-map {
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <arcgis-map basemap="gray" item-id="628500cb6c834ed98d8b9fc0c4c06e07" popup-component-enabled>
+      <arcgis-zoom slot="top-left"></arcgis-zoom>
+       <arcgis-expand slot="top-left">
+        <arcgis-bookmarks hide-time show-heading></arcgis-bookmarks>
+      </arcgis-expand>
+    </arcgis-map>
+  </body>
+</html>

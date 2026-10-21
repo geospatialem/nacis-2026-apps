@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en" class="calcite-mode-light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Custom Configuration</title>
+    <link rel="icon" href="data:;base64,=" />
+    <link rel="stylesheet" href="style.css">
+    <script type="module" blocking="render" src="https://js.arcgis.com/5.2.0-next"></script>
+    
+  </head>
+  <body>
+    <!-- Codepen: https://codepen.io/editor/geospatialem/pen/01a14178-b0f8-7dd1-83a2-e7d3494a44a3 -->
+    <calcite-shell content-behind>
+      <calcite-navigation slot="header">
+        <calcite-navigation-logo
+          slot="logo"
+          icon="styling"
+          heading="Customization"
+        ></calcite-navigation-logo>
+        <calcite-switch
+          slot="content-end"
+          id="theme-toggle"
+          label-text-start="Dark mode"
+          role="switch"
+        ></calcite-switch>
+      </calcite-navigation>
+
+      <calcite-shell-panel slot="panel-end" display-mode="float">
+        <calcite-panel heading="Custom configuration" icon="gear">
+          <calcite-block heading="CSS variables" expanded>
+            <calcite-label class="border-color-control">
+              <span>Outer border color</span>
+              <calcite-input id="border-color" type="text" spellcheck="false"></calcite-input>
+            </calcite-label>
+
+            <calcite-label class="border-color-control">
+              <span>Inner border color</span>
+              <calcite-input id="inner-color" type="text" spellcheck="false"></calcite-input>
+            </calcite-label>
+
+            <calcite-label class="border-color-control">
+              <span>Border width</span>
+              <calcite-input id="border-width" type="text" spellcheck="false"></calcite-input>
+            </calcite-label>
+          </calcite-block>
+          <calcite-block id="code-snippet-block" heading="Code snippet" expanded hidden>
+            <calcite-notice open>
+              <div slot="message">
+                <code id="code-snippet">
+                  <p id="map-code">arcgis-map {</p>
+                  <p>
+                    &nbsp;&nbsp;--arcgis-focus-region-outer-border-color: <span id="border-color-value">black</span>;
+                  </p>
+                  <p>
+                    &nbsp;&nbsp;--arcgis-focus-region-inner-border-color: <span id="inner-color-value">white</span>;
+                  </p>
+                  <p>&nbsp;&nbsp;--arcgis-focus-region-border-width: <span id="border-width-value">2px</span>;</p>
+                  <p>}</p>
+                </code>
+              </div>
+            </calcite-notice>
+          </calcite-block>
+        </calcite-panel>
+      </calcite-shell-panel>
+
+      <arcgis-map
+        id="a11y-map"
+        item-id="05e015c5f0314db9a487a9b46cb37eca"
+        focus-region-visible
+        focus-region-shortcut-enabled
+      >
+        <arcgis-zoom slot="top-left"></arcgis-zoom>
+        <arcgis-home slot="top-left"></arcgis-home>
+      </arcgis-map>
+    </calcite-shell>
+
+    <script type="module" blocking="render" src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Selection Table</title>
+
+    <script type="module" src="https://js.arcgis.com/5.2.0-next/"></script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+
+        .table-panel {
+            --calcite-shell-panel-height: 33vh;
+            --calcite-shell-panel-max-height: 50vh;
+        }
+
+        arcgis-map,
+        arcgis-feature-table {
+            height: 100%;
+        }
+
+        #controls {
+            padding: 16px;
+            background: var(--calcite-color-foreground-1);
+            color: var(--calcite-color-text-1);
+        }
+    </style>
+</head>
+
+<body class="calcite-mode-dark">
+    <calcite-shell>
+        <arcgis-map id="focus-map" item-id="082a319f66b44d3fa707fc606c381f6e" popup-component-enabled focus-region-visible>
+            <arcgis-zoom slot="top-left"></arcgis-zoom>
+        </arcgis-map>
+        <calcite-shell-panel class="table-panel" slot="panel-bottom" layout="horizontal" display-mode="dock">
+            <calcite-panel>
+                <arcgis-feature-table reference-element="focus-map" show-layer-dropdown sync-view-selection></arcgis-feature-table>
+            </calcite-panel>
+        </calcite-shell-panel>
+    </calcite-shell>
+    <script type="module">
+        const reactiveUtils = await $arcgis.import("@arcgis/core/core/reactiveUtils.js");
+        const viewElement = document.querySelector("arcgis-map");
+        const tableElement = document.querySelector("arcgis-feature-table");
+        const tablePanel = document.querySelector(".table-panel");
+        await viewElement.viewOnReady();
+        // Get all feature layers from the map and set the selection manager sources and the initial layer for the feature table.
+        const featureLayers = viewElement.map.allLayers.filter((layer) => layer.type === "feature").toArray();
+        tableElement.layer = featureLayers[0];
+        const selectionManager = viewElement.selectionManager;
+        selectionManager.sources = featureLayers;
+        viewElement.highlights.add({
+            name: "selection",
+            color: "yellow"
+        }, 0);
+        selectionManager.highlightName = "selection";
+        // Listen for selection changes on the selection manager and update the feature table accordingly.
+        reactiveUtils.watch(
+            () => featureLayers.filter((layer) => selectionManager.getSelection(layer)?.length),
+            (selectedLayers) => {
+                if (selectedLayers.length && !selectedLayers.includes(tableElement.layer)) {
+                    tableElement.layer = selectedLayers[0];
+                }
+                tableElement.filterBySelectionEnabled = selectedLayers.length > 0;
+            }, {
+                initial: true
+            },
+        );
+        // Wait for all layer views to be ready and the view to finish updating before enabling the focus region.
+        const layerViews = await Promise.all(featureLayers.map((layer) => viewElement.whenLayerView(layer)));
+        await reactiveUtils.whenOnce(() => !viewElement.updating && layerViews.every((layerView) => !layerView.updating));
+        viewElement.focus();
+        // Listen for focus region selection events and update the selection manager.
+        viewElement.addEventListener("arcgisViewFocusRegionSelect", async (event) => {
+            // Prevent the default popup behavior if the feature table is visible.
+            event.detail.preventDefault();
+            const region = viewElement.focusRegion;
+            if (!region) {
+                return;
+            }
+            // With the focus region defined, perform a hit test to identify features within the region.
+            try {
+                const hit = await viewElement.hitTest(region, {
+                    include: featureLayers
+                });
+                for (const layer of featureLayers) {
+                    const objectIds = hit.results
+                        .filter((result) => result.type === "graphic" && result.graphic.layer === layer)
+                        .map((result) => result.graphic.getObjectId());
+                    // Update the selection manager with the identified object IDs.
+                    selectionManager.replace(layer, objectIds);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+html,
+body,
+arcgis-map {
+height: 100%;
+margin: 0;
+overflow: hidden;
+font-family: "Consolas";
+}
+
+calcite-switch {
+margin-right: 1rem;
+}

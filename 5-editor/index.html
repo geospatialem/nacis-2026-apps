@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Editor</title>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "esri/": "https://jsdev.arcgis.com/5.2/@arcgis/core/",
+          "@arcgis/core/": "https://jsdev.arcgis.com/5.2/@arcgis/core/"
+        }
+      }
+    </script>
+
+    <script>
+      globalThis.$arcgis ??= {};
+      globalThis.$arcgis.forceESM = true;
+    </script>
+    <script type="module" src="https://jsdev.arcgis.com/5.2/index.js"></script>
+
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      :root.calcite-mode-dark {
+        color-scheme: dark;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      arcgis-map {
+        height: 100%;
+      }
+
+      arcgis-editor[hidden] {
+        display: none;
+      }
+
+      #controls {
+        padding: 16px;
+        background: var(--calcite-color-foreground-1);
+        color: var(--calcite-color-text-1);
+      }
+    </style>
+  </head>
+
+  <body>
+    <calcite-shell>
+        <arcgis-map
+        id="focus-map"
+        item-id="c345d61f1e204d9caaaf972702d7e180"
+        focus-region-visible
+        popup-component-enabled
+        focus-region-shortcut-enabled
+      >
+        <arcgis-zoom slot="top-left"></arcgis-zoom>
+        <arcgis-editor slot="top-right" sync-view-selection></arcgis-editor>
+      </arcgis-map>
+    </calcite-shell>
+
+    <script type="module">
+      //# sourceURL=play-app.js
+      import * as reactiveUtils from "esri/core/reactiveUtils.js";
+      import FeatureLayer from "esri/layers/FeatureLayer.js";
+      import HighlightOptions from "esri/views/support/HighlightOptions.js";
+
+      const viewElement = document.querySelector("arcgis-map");
+      const editorElement = document.querySelector("arcgis-editor");
+
+      await viewElement.viewOnReady();
+
+      const featureLayers = viewElement.map.allLayers.filter((layer) => layer instanceof FeatureLayer).toArray();
+
+      const selectionManager = viewElement.selectionManager;
+      selectionManager.sources = featureLayers;
+      viewElement.highlights.add(new HighlightOptions({ name: "selection", color: "yellow" }), 0);
+      selectionManager.highlightName = "selection";
+
+      const layerViews = await Promise.all(featureLayers.map((layer) => viewElement.whenLayerView(layer)));
+      await reactiveUtils.whenOnce(() => !viewElement.updating && layerViews.every((layerView) => !layerView.updating));
+      viewElement.focus();
+
+      viewElement.addEventListener("arcgisViewFocusRegionSelect", async (event) => {
+        // Let the popup handle focus-region selection while the Editor is hidden.
+        event.detail.preventDefault();
+
+        const region = viewElement.focusRegion;
+        if (!region) {
+          return;
+        }
+
+        if (editorElement.activeWorkflow?.type === "create-features") {
+          // User is in the create-features workflow
+          return;
+        } else {
+          try {
+            const hit = await viewElement.hitTest(region, { include: featureLayers });
+            for (const layer of featureLayers) {
+              const objectIds = hit.results.flatMap((result) =>
+                result.type === "graphic" && result.graphic.layer === layer ? [result.graphic.getObjectId()] : [],
+              );
+              selectionManager.replace(layer, objectIds);
+            }
+          } catch (error) {
+            console.error("Unable to select features in the focus region.", error);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
