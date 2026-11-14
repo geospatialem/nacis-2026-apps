@@ -6,6 +6,7 @@
 5. [Editor](https://geospatialem.github.io/nacis-2026-apps/5-editor/)
 6. [Selection Table](https://geospatialem.github.io/nacis-2026-apps/6-selection-table/)
 7. [Custom Configuration](https://geospatialem.github.io/nacis-2026-apps/7-custom-configuration)
+8. [Custom Configuration for blog](https://geospatialem.github.io/nacis-2026-apps/8-custom-configuration-blog)
 
 ### Resources
 - [ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)
